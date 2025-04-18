@@ -1,10 +1,10 @@
 import 'package:recipe/model/biriyani_model.dart';
 import 'package:recipe/model/burger_model.dart';
 import 'package:recipe/model/category_model.dart';
-import 'package:recipe/service/biriyani_data.dart';
-import 'package:recipe/service/burger_data.dart';
-import 'package:recipe/service/category_data.dart';
-import 'package:recipe/service/widget_support.dart';
+import 'package:recipe/services/biriyani_data.dart';
+import 'package:recipe/services/burger_data.dart';
+import 'package:recipe/services/category_data.dart';
+import 'package:recipe/services/widget_support.dart';
 import 'package:flutter/material.dart';
 
 
@@ -32,6 +32,15 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        onPressed: () {},
+
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
       body: Container(
         margin: EdgeInsets.only(
           left: 15.0,
@@ -117,14 +126,14 @@ class _HomeState extends State<Home> {
             SizedBox(
               height: 10.0,
             ),
-            Container(
+            SizedBox(
               height: 60,
               child: ListView.builder(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
                 itemCount: categories.length,
                 itemBuilder: (context, index){
-                  return CategoryTile(
+                  return categoryTile(
                     categories[index].name!,
                     categories[index].image!,
                     index.toString(),
@@ -150,7 +159,7 @@ class _HomeState extends State<Home> {
                   ),
                   itemCount: biriyani.length,
                   itemBuilder: (context, index){
-                    return FoodTile(biriyani[index].name!, biriyani[index].image!, biriyani[index].time!);
+                    return foodTile(biriyani[index].name!, biriyani[index].image!, biriyani[index].time!);
                   }
                 ),
               ),
@@ -170,7 +179,7 @@ class _HomeState extends State<Home> {
                   ),
                   itemCount: burger.length,
                   itemBuilder: (context, index){
-                    return FoodTile(burger[index].name!, burger[index].image!, burger[index].time!);
+                    return foodTile(burger[index].name!, burger[index].image!, burger[index].time!);
                   }
                 ),
               ),
@@ -181,7 +190,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-Widget FoodTile(String name, String image, String time) {
+Widget foodTile(String name, String image, String time) {
   return Container(
     margin: EdgeInsets.only(
       right: 10.0,
@@ -242,7 +251,7 @@ Widget FoodTile(String name, String image, String time) {
   );
 }
 
-  Widget CategoryTile(String name, String image, String categoryindex){
+  Widget categoryTile(String name, String image, String categoryindex){
     return GestureDetector(
       onTap: () {
         track =  categoryindex.toString();

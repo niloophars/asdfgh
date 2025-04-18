@@ -1,9 +1,17 @@
-import 'package:recipe/pages/onboarding.dart';
-import 'package:recipe/pages/login.dart';
-import 'package:recipe/pages/signup.dart';
+// import 'package:recipe/pages/onboarding.dart';
+// import 'package:recipe/pages/login.dart';
+// import 'package:recipe/pages/signup.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:recipe/firebase_options.dart';
+import 'package:recipe/pages/add_recipe.dart';
+import 'package:recipe/pages/bottomnavbar.dart';
+import 'package:recipe/pages/home.dart';
+import 'package:recipe/pages/recipe.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   runApp(const MyApp());
 }
@@ -35,7 +43,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: BottomNavBar(),
+      home: AddRecipe(),
     );
   }
 }

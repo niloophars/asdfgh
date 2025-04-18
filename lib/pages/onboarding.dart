@@ -1,4 +1,4 @@
-import 'package:recipe/service/widget_support.dart';
+import 'package:recipe/services/widget_support.dart';
 import 'package:flutter/material.dart';
 
 class Onboarding extends StatefulWidget {

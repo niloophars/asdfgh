@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "695603879536",
+    "project_id": "nom-nom-4f1e0",
+    "storage_bucket": "nom-nom-4f1e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695603879536:android:a089588dab84f624fddeb5",
+        "android_client_info": {
+          "package_name": "com.example.cooker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqRuGOMql8uN1EOUy_HREploB0tVT5dFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695603879536:android:6f2fdaaafbca1e2bfddeb5",
+        "android_client_info": {
+          "package_name": "com.example.recipe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqRuGOMql8uN1EOUy_HREploB0tVT5dFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695603879536:android:be8e9386b9a43c5ffddeb5",
+        "android_client_info": {
+          "package_name": "com.example.recipes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqRuGOMql8uN1EOUy_HREploB0tVT5dFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
