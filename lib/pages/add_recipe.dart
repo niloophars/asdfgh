@@ -11,6 +11,23 @@ class AddRecipe extends StatefulWidget {
 
 class _AddRecipeState extends State<AddRecipe> {
   String? value;
+  
+  
+  List<String> generateSearchKeys(String fullName) {
+  fullName = fullName.toLowerCase();
+  List<String> keys = [];
+
+  List<String> words = fullName.split(" ");
+
+  for (String word in words) {
+    for (int i = 1; i <= word.length; i++) {
+      keys.add(word.substring(0, i));
+    }
+  }
+
+  return keys.toSet().toList(); // Remove duplicates
+}
+
 
   final List<String> recipe = [
     "Breakfast",
@@ -46,45 +63,56 @@ class _AddRecipeState extends State<AddRecipe> {
   }
 
   uploadItem() async {
-    if (imageUrlController.text.isNotEmpty &&
-        nameController.text.isNotEmpty &&
-        ingredientsList.isNotEmpty &&
-        cookingInstructionsList.isNotEmpty &&
-        totalTimeController.text.isNotEmpty) {
-      Map<String, dynamic> addRecipe = {
-        "Name": nameController.text,
-        "ImageURL": imageUrlController.text,
-        "Ingredients": ingredientsList,
-        "CookingInstructions": cookingInstructionsList,
-        "TotalTime": totalTimeController.text,
-        "Category": value,
-      };
+  if (imageUrlController.text.isNotEmpty &&
+      nameController.text.isNotEmpty &&
+      ingredientsList.isNotEmpty &&
+      cookingInstructionsList.isNotEmpty &&
+      totalTimeController.text.isNotEmpty) {
+
+    // Get full name
+    String fullName = nameController.text.trim();
+
+    // Convert to uppercase for exact match
+    String searchedName = fullName.toUpperCase();
+
+    // Get first letters of each word (lowercase)
+    List<String> searchKeys = generateSearchKeys(fullName);
+
+
+    Map<String, dynamic> addRecipe = {
+      "Name": fullName,
+      "ImageURL": imageUrlController.text,
+      "Ingredients": ingredientsList,
+      "CookingInstructions": cookingInstructionsList,
+      "TotalTime": totalTimeController.text,
+      "Category": value,
+      "SearchedName": searchedName,
+      "SearchKeys": searchKeys,
+    };
 
       DatabaseMethods().addRecipe(addRecipe).then((value) {
-        Fluttertoast.showToast(
-          msg: "Recipe Added Successfully",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: const Color.fromARGB(255, 175, 152, 76),
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+      Fluttertoast.showToast(
+        msg: "Recipe Added Successfully",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: const Color.fromARGB(255, 175, 152, 76),
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
 
-
-
-
-        nameController.clear();
-        ingredientsList.clear();
-        cookingInstructionsList.clear();
-        totalTimeController.clear();
-        imageUrlController.clear();
-        _pageController.jumpToPage(0); // Go back to the first page
-      });
-    } else {
-      print("Please fill all fields.");
-    }
+      // Reset fields
+      nameController.clear();
+      ingredientsList.clear();
+      cookingInstructionsList.clear();
+      totalTimeController.clear();
+      imageUrlController.clear();
+      _pageController.jumpToPage(0); // Go back to the first page
+    });
+  } else {
+    print("Please fill all fields.");
   }
+}
 
   @override
   Widget build(BuildContext context) {

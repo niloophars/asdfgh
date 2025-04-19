@@ -17,4 +17,13 @@ class DatabaseMethods {
     return await FirebaseFirestore.instance.collection("Recipe").
     where("Category", isEqualTo: category).snapshots();
   }
+
+Future<QuerySnapshot> search(String name) async {
+  return await FirebaseFirestore.instance.collection("Recipe")
+      .where("Key", arrayContains: name.substring(0, 1).toUpperCase())
+      .get();
+}
+
+
+
 }

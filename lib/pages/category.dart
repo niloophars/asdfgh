@@ -115,7 +115,7 @@ class _CategoryRecipeState extends State<CategoryRecipe> {
               child: Text(
                 widget.category,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: const Color.fromARGB(255, 202, 121, 0),
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                 ),
