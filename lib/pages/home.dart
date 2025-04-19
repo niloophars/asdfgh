@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:recipe/pages/category.dart';
 import 'package:recipe/pages/recipe.dart';
 import 'package:recipe/services/database.dart';
 import 'package:recipe/services/widget_support.dart';
@@ -175,129 +176,179 @@ class _HomeState extends State<Home> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    Container(
-                      margin: EdgeInsets.only(
-                        right: 20.0,
-                      ),
-                      child: Column(                 
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset(
-                              "images/breakfast.jpg",
-                              height: 60.0,
-                              width: 80.0,
-                              fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryRecipe(category: "Breakfast"),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(
+                          right: 20.0,
+                        ),
+                        child: Column(                 
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                "images/breakfast.jpg",
+                                height: 60.0,
+                                width: 80.0,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Text(
-                            "Breakfast",
-                            style: AppWidget.lightTextFieldStyle(),                          
-                          )
-                        ],
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              "Breakfast",
+                              style: AppWidget.lightTextFieldStyle(),                          
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(
-                        right: 20.0,
-                      ),
-                      child: Column(                 
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset(
-                              "images/Lunch.jpg",
-                              height: 60.0,
-                              width: 80.0,
-                              fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryRecipe(category: "Lunch"),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(
+                          right: 20.0,
+                        ),
+                        child: Column(                 
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                "images/Lunch.jpg",
+                                height: 60.0,
+                                width: 80.0,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Text(
-                            "Lunch",
-                            style: AppWidget.lightTextFieldStyle(),                          
-                          )
-                        ],
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              "Lunch",
+                              style: AppWidget.lightTextFieldStyle(),                          
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(
-                        right: 20.0,
-                      ),
-                      child: Column(                 
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset(
-                              "images/dinner.jpg",
-                              height: 60.0,
-                              width: 80.0,
-                              fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryRecipe(category: "Dinner"),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(
+                          right: 20.0,
+                        ),
+                        child: Column(                 
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                "images/dinner.jpg",
+                                height: 60.0,
+                                width: 80.0,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Text(
-                            "Dinner",
-                            style: AppWidget.lightTextFieldStyle(),                          
-                          )
-                        ],
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              "Dinner",
+                              style: AppWidget.lightTextFieldStyle(),                          
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(
-                        right: 20.0,
-                      ),
-                      child: Column(                 
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset(
-                              "images/Dessert.jpg",
-                              height: 60.0,
-                              width: 80.0,
-                              fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryRecipe(category: "Dessert"),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(
+                          right: 20.0,
+                        ),
+                        child: Column(                 
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                "images/Dessert.jpg",
+                                height: 60.0,
+                                width: 80.0,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Text(
-                            "Dessert",
-                            style: AppWidget.lightTextFieldStyle(),                          
-                          )
-                        ],
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              "Dessert",
+                              style: AppWidget.lightTextFieldStyle(),                          
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(
-                        right: 20.0,
-                      ),
-                      child: Column(                 
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset(
-                              "images/drinks.jpg",
-                              height: 60.0,
-                              width: 80.0,
-                              fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryRecipe(category: "Drinks"),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(
+                          right: 20.0,
+                        ),
+                        child: Column(                 
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                "images/drinks.jpg",
+                                height: 60.0,
+                                width: 80.0,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Text(
-                            "Drinks",
-                            style: AppWidget.lightTextFieldStyle(),                          
-                          )
-                        ],
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              "Drinks",
+                              style: AppWidget.lightTextFieldStyle(),                          
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ],

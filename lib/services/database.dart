@@ -12,4 +12,9 @@ class DatabaseMethods {
   Future<Stream<QuerySnapshot>> getallRecipe() async {
     return await FirebaseFirestore.instance.collection("Recipe").snapshots();
   }
+
+  Future<Stream<QuerySnapshot>> getCategoryRecipe(String category) async {
+    return await FirebaseFirestore.instance.collection("Recipe").
+    where("Category", isEqualTo: category).snapshots();
+  }
 }
