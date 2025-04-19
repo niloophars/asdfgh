@@ -5,23 +5,28 @@ List<CategoryModel> getCategories(){
   List<CategoryModel> category = [];
   CategoryModel categoryModel = CategoryModel();
 
-  categoryModel.name="Biriyani";
-  categoryModel.image="images/Biriyani.jpg";
+  categoryModel.name="Breakfast";
+  categoryModel.image="images/breakfast.jpg";
   category.add(categoryModel);
   categoryModel = CategoryModel();
 
-  categoryModel.name="Burger";
-  categoryModel.image="images/Burger.jpg";
+  categoryModel.name="Lunch";
+  categoryModel.image="images/Lunch.jpg";
   category.add(categoryModel);
   categoryModel = CategoryModel();
 
-  categoryModel.name="South-Indian";
-  categoryModel.image="images/South-Indian.jpg";
+  categoryModel.name="Dinner";
+  categoryModel.image="images/dinner.jpg";
   category.add(categoryModel);
   categoryModel = CategoryModel();
 
-  categoryModel.name="North-Indian";
-  categoryModel.image="images/North-Indian.jpg";
+  categoryModel.name="Dessert";
+  categoryModel.image="images/Dessert.jpg";
+  category.add(categoryModel);
+  categoryModel = CategoryModel();
+
+  categoryModel.name="Drinks";
+  categoryModel.image="images/drinks.jpg";
   category.add(categoryModel);
   categoryModel = CategoryModel();
 

@@ -1,6 +1,6 @@
-import 'package:recipe/pages/order.dart';
+
 import 'package:recipe/pages/profile.dart';
-import 'package:recipe/pages/wallet.dart';
+
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:recipe/pages/home.dart';
@@ -19,8 +19,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   late List<Widget> pages; 
 
   late Home homePage;
-  late Order order;
-  late Wallet wallet;
+
   late Profile profilePage;
 
   int currentTabIndex = 0;
@@ -28,14 +27,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   void initState() {
     homePage = Home();
-    order = Order();
-    wallet = Wallet();
+
     profilePage = Profile();
 
     pages = [
       homePage,
-      order,
-      wallet,
+   
       profilePage,
     ];
     super.initState();

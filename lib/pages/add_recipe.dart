@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:recipe/services/database.dart';
 
 class AddRecipe extends StatefulWidget {
@@ -9,6 +10,15 @@ class AddRecipe extends StatefulWidget {
 }
 
 class _AddRecipeState extends State<AddRecipe> {
+  String? value;
+
+  final List<String> recipe = [
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Dessert",
+    "Drinks",
+  ];
   PageController _pageController = PageController();
   TextEditingController imageUrlController = TextEditingController();
   TextEditingController nameController = TextEditingController();
@@ -47,9 +57,23 @@ class _AddRecipeState extends State<AddRecipe> {
         "Ingredients": ingredientsList,
         "CookingInstructions": cookingInstructionsList,
         "TotalTime": totalTimeController.text,
+        "Category": value,
       };
 
       DatabaseMethods().addRecipe(addRecipe).then((value) {
+        Fluttertoast.showToast(
+          msg: "Recipe Added Successfully",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: const Color.fromARGB(255, 175, 152, 76),
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+
+
+
+
         nameController.clear();
         ingredientsList.clear();
         cookingInstructionsList.clear();
@@ -117,6 +141,47 @@ class _AddRecipeState extends State<AddRecipe> {
         Text("Recipe Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: const Color.fromARGB(255, 198, 150, 6))),
         SizedBox(height: 10.0),
         _buildTextField(controller: nameController, hintText: "Enter Recipe Name"),
+        SizedBox(height: 20.0),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.0
+          ),
+          width: MediaQuery.of(context).size.width, 
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(),
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              items: recipe.map(
+                (item) => DropdownMenuItem(
+                  value: item,
+                  child: Text(
+                    item,
+                  ),
+                )
+              ).toList(),
+              onChanged: ((value)=> 
+                setState(() {
+                  this.value = value;
+                })
+              ),
+              dropdownColor: Colors.white,
+              hint: Text(
+                "Select Category",
+              ),
+              iconSize: 36,
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: const Color.fromARGB(255, 202, 121, 0),
+            
+              ),
+              value: value,
+            ),
+
+          ),
+        ),
         SizedBox(height: 20.0),
         Text("Total Time", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: const Color.fromARGB(255, 198, 150, 6))),
         SizedBox(height: 10.0),
@@ -224,7 +289,7 @@ Widget _buildPage3() {
             }
           },
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(
+            backgroundColor: WidgetStateProperty.all(
                 const Color.fromARGB(255, 202, 121, 0)),
           ),
           child: Text("Add Instruction", style: TextStyle(color: Colors.white)),

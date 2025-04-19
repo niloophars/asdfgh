@@ -41,4 +41,12 @@ class AppWidget{
     );
   }
 
+  static TextStyle lightTextFieldStyle(){
+    return TextStyle(
+      color: const Color.fromARGB(255, 103, 78, 4),
+      fontSize: 15.0,
+      fontWeight: FontWeight.w500
+    );
+  }
+
 }

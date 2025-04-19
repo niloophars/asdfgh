@@ -7,4 +7,9 @@ class DatabaseMethods {
         .add(addrecipe);
 
   }
+
+
+  Future<Stream<QuerySnapshot>> getallRecipe() async {
+    return await FirebaseFirestore.instance.collection("Recipe").snapshots();
+  }
 }
