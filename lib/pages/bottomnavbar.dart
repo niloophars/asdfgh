@@ -1,5 +1,6 @@
 
 import 'package:recipe/pages/add_recipe.dart';
+import 'package:recipe/pages/favorite.dart';
 import 'package:recipe/pages/profile.dart';
 
 import 'package:flutter/material.dart';
@@ -20,10 +21,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   late List<Widget> pages; 
 
   late Home homePage;
-  late AddRecipe add;
-  late Center walletPage;
+  late FavoritesPage favorite;
   late AddRecipe addRecipe;
-
   late Profile profile;
 
   int currentTabIndex = 0;
@@ -31,13 +30,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   void initState() {
     homePage = Home();
+    favorite = FavoritesPage();
     addRecipe = AddRecipe();
     profile = Profile();
-    walletPage = Center(child: Text("Wallet Page Coming Soon"));
+  
 
     pages = [
       homePage,
-      walletPage,
+      favorite,
       addRecipe,
       profile,
     ];
@@ -66,7 +66,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             size: 30.0,
           ),
           Icon(
-            Icons.wallet,
+            Icons.star,
             color: Colors.white,
             size: 30.0,
           ),
