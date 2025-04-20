@@ -1,12 +1,8 @@
-// import 'package:cooker/service/database.dart';
 
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
-import 'package:recipe/pages/bottomnavbar.dart';
+
 import 'package:recipe/pages/login.dart';
 
 import 'package:recipe/services/database.dart';
@@ -73,7 +69,7 @@ class _SignupState extends State<Signup> {
       if (e.code == 'weak-password') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.orangeAccent,
+            backgroundColor: const Color.fromARGB(255, 199, 165, 52),
             content: Text(
               "The password provided is too weak.",
               style: TextStyle(fontSize: 18.0),
@@ -83,7 +79,7 @@ class _SignupState extends State<Signup> {
       } else if (e.code == 'email-already-in-use') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.orangeAccent,
+            backgroundColor:const Color.fromARGB(255, 199, 165, 52),
             content: Text(
               "The account already exists for that email.",
               style: TextStyle(fontSize: 18.0),
@@ -111,14 +107,14 @@ class _SignupState extends State<Signup> {
               padding: EdgeInsets.only(top: 40.0),
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                  color: Color(0xffffefbf),
+                  color: Color.fromARGB(255, 216, 191, 113),
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40))),
               child: Column(
                 children: [
                   Image.asset(
-                  "images/nomnom.png",
+                  "images/icon.png",
                   height: 180,
                   fit: BoxFit.fill,
                   width: 240,
@@ -225,7 +221,7 @@ class _SignupState extends State<Signup> {
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  backgroundColor: Colors.red,
+                  backgroundColor: const Color.fromARGB(255, 199, 165, 52),
                   content: Text(
                     "Please fill all the fields",
                     style: TextStyle(

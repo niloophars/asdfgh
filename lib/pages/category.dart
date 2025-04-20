@@ -53,7 +53,7 @@ class _CategoryRecipeState extends State<CategoryRecipe> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            Recipe(image: ds["ImageURL"], dish: ds["Name"]),
+                            Recipe(image: ds["ImageURL"], dish: ds["Name"], recipeId: ds.id),
                       ),
                     );
                   },

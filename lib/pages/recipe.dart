@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // Add for star rating
 import 'package:recipe/services/database.dart';
 
-import 'package:recipe/services/widget_support.dart';
-
 class Recipe extends StatefulWidget {
-  String image, dish;
-  Recipe({required this.image, required this.dish});
+  String image, dish, recipeId;
+  Recipe({required this.image, required this.dish, required this.recipeId});
 
   @override
   State<Recipe> createState() => _RecipeState();
@@ -18,6 +17,8 @@ class _RecipeState extends State<Recipe> {
   bool isLoading = true;
   bool isFavorite = false; // Track favorite status
   late String userId;
+  double? userRating; // Store the user's rating
+  double? averageRating; // Store the recipe's average rating
 
   DatabaseMethods databaseMethods = DatabaseMethods();
 
@@ -38,6 +39,7 @@ class _RecipeState extends State<Recipe> {
     if (snap.docs.isNotEmpty) {
       setState(() {
         recipeData = snap.docs.first.data() as Map<String, dynamic>;
+        averageRating = recipeData!["rating"] ?? 0.0; // Get current average rating
         isLoading = false;
       });
     }
@@ -76,6 +78,29 @@ class _RecipeState extends State<Recipe> {
     setState(() {
       isFavorite = !isFavorite;
     });
+  }
+
+  // Update rating in Firestore
+  void updateRating(double rating) async {
+    if (recipeData != null) {
+      double totalRating = recipeData!["rating"] ?? 0.0;
+      int ratingCount = recipeData!["rating_count"] ?? 0;
+
+      // Calculate new average rating
+      double newTotalRating = totalRating + rating;
+      int newRatingCount = ratingCount + 1;
+      double newAverageRating = newTotalRating / newRatingCount;
+
+      await FirebaseFirestore.instance.collection("Recipe").doc(widget.recipeId).update({
+        "rating": newAverageRating,
+        "rating_count": newRatingCount,
+      });
+
+      setState(() {
+        averageRating = newAverageRating;
+        userRating = rating;
+      });
+    }
   }
 
   @override
@@ -123,13 +148,13 @@ class _RecipeState extends State<Recipe> {
                         ),
                         Divider(),
                         SizedBox(height: 10.0),
-                        // Timer and Star in the same row
+                        // Timer and Rating in the same row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.timer, color: Colors.black54),
+                                Icon(Icons.timer, color: const Color.fromARGB(255, 112, 79, 1)),
                                 SizedBox(width: 6),
                                 Text(
                                   recipeData!["TotalTime"] ?? "",
@@ -140,10 +165,31 @@ class _RecipeState extends State<Recipe> {
                                 ),
                               ],
                             ),
+                            Row(
+                              children: [
+                                
+                                 Icon(
+                                  Icons.star_border,
+                                  color: const Color.fromARGB(255, 112, 79, 1),
+                                  size: 40,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  averageRating != null
+                                      ? averageRating!.toStringAsFixed(1)
+                                      : "0.0",
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                               
+                              ],
+                            ),
                             GestureDetector(
                               onTap: toggleFavorite,
                               child: Icon(
-                                isFavorite ? Icons.star : Icons.star_border,
+                                isFavorite ? Icons.bookmark : Icons.bookmark_border,
                                 size: 50.0,
                                 color: const Color.fromARGB(255, 112, 79, 1),
                               ),
@@ -153,7 +199,7 @@ class _RecipeState extends State<Recipe> {
                         SizedBox(height: 20.0),
                         Text(
                           "Ingredients",
-                          style: AppWidget.boldTextFieldStyle(),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         SizedBox(height: 10.0),
                         ...List.generate(
@@ -172,7 +218,7 @@ class _RecipeState extends State<Recipe> {
                         SizedBox(height: 20.0),
                         Text(
                           "Instructions",
-                          style: AppWidget.boldTextFieldStyle(),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         SizedBox(height: 10.0),
                         ...List.generate(
@@ -189,7 +235,59 @@ class _RecipeState extends State<Recipe> {
                           },
                         ),
                         SizedBox(height: 30),
+                        // Rating Input Section
+                        Text(
+                          "Rate this recipe",
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                        SizedBox(height: 10),
+                        RatingBar.builder(
+                          initialRating: userRating ?? 0.0,
+                          minRating: 1,
+                          itemCount: 5,
+                          itemSize: 40.0,
+                          direction: Axis.horizontal,
+                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                          itemBuilder: (context, index) {
+                            // Check if the current star index is less than the user's rating
+                            if (index < (userRating ?? 0.0)) {
+                              // Return a filled star for rated stars
+                              return Icon(
+                                Icons.star,
+                                color: const Color.fromARGB(255, 157, 126, 1), // Golden color for rated stars
+                              );
+                            } else {
+                              // Return an outlined star for unrated stars
+                              return Icon(
+                                Icons.star_border,
+                                color: const Color.fromARGB(255, 168, 118, 1), // Light gold color for unrated stars
+                              );
+                            }
+                          },
+                          onRatingUpdate: (rating) {
+                            updateRating(rating);
+                          },
+                        ),
                       ],
+                    ),
+                  ),
+                ),
+                // Small round back button positioned at top left
+                Positioned(
+                  top: 30,
+                  left: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context); // Pop the current screen and go back
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: const Color.fromARGB(255, 212, 183, 96),
+                      radius: 20,
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: const Color.fromARGB(255, 112, 79, 1),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),

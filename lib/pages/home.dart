@@ -37,7 +37,7 @@ class _HomeState extends State<Home> {
   var queryResultSet=[];
   var tempSearchStore=[];
 
- initiateSearch(String value) {
+  initiateSearch(String value) {
   if (value.isEmpty) {
     setState(() {
       queryResultSet = [];
@@ -47,10 +47,13 @@ class _HomeState extends State<Home> {
     return;
   }
 
-  String capitalizedValue = value[0].toUpperCase() + value.substring(1);
+  // Convert the search input to lowercase for case-insensitive search
+  String searchKey = value.toLowerCase();
 
   if (queryResultSet.isEmpty && value.length == 1) {
-    DatabaseMethods().search(value).then((QuerySnapshot docs) {
+    // Perform search on Firestore when the query is fresh
+    DatabaseMethods().search(searchKey).then((QuerySnapshot docs) {
+      print("Docs found: ${docs.docs.length}");
       List tempList = [];
       for (var doc in docs.docs) {
         tempList.add(doc.data());
@@ -58,21 +61,24 @@ class _HomeState extends State<Home> {
 
       setState(() {
         queryResultSet = tempList;
+        // Use 'contains' instead of 'startsWith' for a more flexible search
         tempSearchStore = tempList.where((element) =>
-          element['SearchedName'].startsWith(capitalizedValue)).toList();
+            element['SearchedName'].toString().toLowerCase().contains(searchKey)).toList();
+        search = true;
       });
     });
   } else {
     setState(() {
+      // Filter from the already fetched recipes
       tempSearchStore = queryResultSet.where((element) =>
-        element['SearchedName'].startsWith(capitalizedValue)).toList();
+          element['SearchedName'].toString().toLowerCase().contains(searchKey)).toList();
+      search = true;
     });
   }
-
-  setState(() {
-    search = true;
-  });
 }
+
+
+
 
 
   Widget allRecipe () {
@@ -94,7 +100,7 @@ class _HomeState extends State<Home> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            Recipe(image: ds["ImageURL"], dish: ds["Name"]),
+                            Recipe(image: ds["ImageURL"], dish: ds["Name"], recipeId: ds.id),
                       ),
                     );
                   },
@@ -142,19 +148,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color.fromARGB(255, 169, 129, 9),
-              onPressed: () {
-                Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddRecipe()),
-          );
-        },
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      ),
+    
       body: Container(
         margin: EdgeInsets.only(
           top: 50.0, 
@@ -169,9 +163,9 @@ class _HomeState extends State<Home> {
               child: Row(
                 children: [
                   Text(
-                    "Let's get Cooking!",
+                    "Let's Get Cooking!",
                     style: TextStyle(
-                      color: Colors.black,
+                      color: const Color.fromARGB(255, 110, 66, 1),
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -180,9 +174,9 @@ class _HomeState extends State<Home> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10.0),
                     child: Image.asset(
-                      "images/Profile.png",
-                      height: 50.0,
-                      width: 50.0,
+                      "images/icon.png",
+                      height: 70.0,
+                      width: 80.0,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -206,7 +200,7 @@ class _HomeState extends State<Home> {
               width: MediaQuery.of(context).size.width,
               child: TextField(
                 onChanged: (value) {
-                  initiateSearch(value.toUpperCase());
+                  initiateSearch(value);
                 },
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -221,17 +215,19 @@ class _HomeState extends State<Home> {
             SizedBox(
               height: 20.0,
             ),
-            search? ListView(
-              padding: EdgeInsets.only(
-                left: 10.0,
-                right: 10.0,
+            search? Expanded(
+              child: ListView(
+                padding: EdgeInsets.only(
+                  left: 10.0,
+                  right: 10.0,
+                ),
+                primary: false,
+                shrinkWrap: true,
+                children: tempSearchStore.map((element) {
+                  return buildResultCard(element);
+                }
+                ).toList()
               ),
-              primary: false,
-              shrinkWrap: true,
-              children: tempSearchStore.map((element) {
-                return buildResultCard(element);
-              }
-              ).toList()
             ):
             
                 Container(
@@ -448,6 +444,7 @@ class _HomeState extends State<Home> {
             builder: (context) => Recipe(
               dish: data["Name"], 
               image: data["ImageURL"],
+              recipeId: data["id"],
 
               ),
           ),
@@ -463,7 +460,7 @@ class _HomeState extends State<Home> {
           child: Container(
             padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color.fromARGB(255, 236, 201, 95),
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Row(
@@ -472,7 +469,7 @@ class _HomeState extends State<Home> {
                   borderRadius: BorderRadius.circular(60),
                   child: Image.network(
                     data["ImageURL"],
-                    height: 70.0,
+                    height: 60.0,
                     width: 60.0,
                     fit: BoxFit.cover,
                   ),

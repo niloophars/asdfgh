@@ -66,7 +66,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             size: 30.0,
           ),
           Icon(
-            Icons.star,
+            Icons.bookmark,
             color: Colors.white,
             size: 30.0,
           ),

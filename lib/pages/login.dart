@@ -57,7 +57,7 @@ class _LogInState extends State<LogIn> {
         print("No document found for this UID in Firestore.");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.red,
+            backgroundColor:  const Color.fromARGB(255, 199, 165, 52),
             content: Text("User data not found in Firestore."),
           ),
         );
@@ -67,7 +67,7 @@ class _LogInState extends State<LogIn> {
     if (e.code == 'user-not-found') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.orangeAccent,
+          backgroundColor: const Color.fromARGB(255, 199, 165, 52),
           content: Text(
             "No user found for that email.",
             style: TextStyle(fontSize: 18.0),
@@ -77,7 +77,7 @@ class _LogInState extends State<LogIn> {
     } else if (e.code == 'wrong-password') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.orangeAccent,
+          backgroundColor: const Color.fromARGB(255, 199, 165, 52),
           content: Text(
             "Wrong password provided for that user.",
             style: TextStyle(fontSize: 18.0),
@@ -108,14 +108,14 @@ class _LogInState extends State<LogIn> {
               padding: EdgeInsets.only(top: 40.0),
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                  color: Color(0xffffefbf),
+                  color: Color.fromARGB(255, 216, 191, 113),
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40))),
               child: Column(
                 children: [
                   Image.asset(
-                  "images/nomnom.png",
+                  "images/icon.png",
                   height: 180,
                   fit: BoxFit.fill,
                   width: 240,
@@ -188,15 +188,15 @@ class _LogInState extends State<LogIn> {
         SizedBox(
           height: 10.0
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              "Forgot Password?",
-              style: AppWidget.simpleTextFieldStyle(),
-            )
-          ],
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.end,
+        //   children: [
+        //     Text(
+        //       "Forgot Password?",
+        //       style: AppWidget.simpleTextFieldStyle(),
+        //     )
+        //   ],
+        // ),
         SizedBox(
           height: 40.0
         ),

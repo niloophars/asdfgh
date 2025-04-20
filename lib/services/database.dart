@@ -18,11 +18,15 @@ class DatabaseMethods {
     where("Category", isEqualTo: category).snapshots();
   }
 
-Future<QuerySnapshot> search(String name) async {
-  return await FirebaseFirestore.instance.collection("Recipe")
-      .where("SearchKey", arrayContains: name.substring(0, 1).toUpperCase())
-      .get();
+ Future<QuerySnapshot> search(String searchKey) async {
+  return FirebaseFirestore.instance
+    .collection('Recipe')
+    .where('searchIndex', arrayContains: searchKey)
+    .get();
+
 }
+
+
 
 
 
@@ -62,9 +66,7 @@ Future<QuerySnapshot> search(String name) async {
 
     return doc.exists;
   }
-
-
-
-
 }
+
+
 
