@@ -1,3 +1,4 @@
+import 'package:recipe/pages/signup.dart';
 import 'package:recipe/services/widget_support.dart';
 import 'package:flutter/material.dart';
 
@@ -36,20 +37,30 @@ class _OnboardingState extends State<Onboarding> {
             SizedBox(
               height: 30.0,
             ),
-            Container(
-              height: 60,
-              width: MediaQuery.of(context).size.width/2,
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 191, 148, 107),
-                borderRadius: BorderRadius.circular(20)
-              ),
-              child: Center(
-                child: Text(
-                  "Get Cooked!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Signup(),
+                  ),
+                );
+              },
+              child: Container(
+                height: 60,
+                width: MediaQuery.of(context).size.width/2,
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 191, 148, 107),
+                  borderRadius: BorderRadius.circular(20)
+                ),
+                child: Center(
+                  child: Text(
+                    "Get Cooked!",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold
+                    ),
                   ),
                 ),
               ),

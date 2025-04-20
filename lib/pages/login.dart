@@ -1,108 +1,105 @@
-// import 'package:cooker/service/database.dart';
-
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
 import 'package:recipe/pages/bottomnavbar.dart';
-import 'package:recipe/pages/login.dart';
-
-import 'package:recipe/services/database.dart';
+import 'package:recipe/pages/signup.dart';
 import 'package:recipe/services/shared_pref.dart';
 import 'package:recipe/services/widget_support.dart';
 
-class Signup extends StatefulWidget {
-  const Signup({Key? key});
+class LogIn extends StatefulWidget {
+  const LogIn ({Key? key}) : super(key: key);
 
   @override
-  State<Signup> createState() => _SignupState();
+ State<LogIn> createState() => _LogInState();
 }
 
-class _SignupState extends State<Signup> {
-  String email = "", password = "", name = "";
+class _LogInState extends State<LogIn> {
+  String email ="", password = "", name = "";
   TextEditingController namecontroller = TextEditingController();
-  TextEditingController mailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
-  
+  TextEditingController mailcontroller = TextEditingController();
 
-  registration() async {
-  if (password != null &&
-      namecontroller.text != "" &&
-      mailcontroller.text != "") {
-    try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    userLogin() async {
+  try {
+    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      User? user = userCredential.user;
+    User? user = userCredential.user;
 
-      if (user != null) {
-        Map<String, dynamic> userInfoMap = {
-          "Name": namecontroller.text,
-          "Email": mailcontroller.text,
-          "Id": user.uid, // ✅ Set correct UID here
-        };
+    if (user != null) {
+      print("Logged in with user UID: ${user.uid}"); // Log user UID
+      
+      // Fetch user info from Firestore
+      var userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
 
-        await SharedpreferenceHelper().saveUserEmail(email);
-        await SharedpreferenceHelper().saveUserName(namecontroller.text);
-        await DatabaseMethods().addUserDetails(userInfoMap, user.uid); // ✅ Use FirebaseAuth UID as doc ID
+      print("Document exists: ${userDoc.exists}"); // Log if the document exists
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color.fromARGB(255, 175, 152, 76),
-            content: Text(
-              "Registered Successfully",
-              style: TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
+      if (userDoc.exists) {
+        String userName = userDoc["Name"];
+        String userEmail = userDoc["Email"];
 
-        Navigator.push(
+        // Save to SharedPreferences
+        await SharedpreferenceHelper().saveUserId(user.uid);
+        await SharedpreferenceHelper().saveUserName(userName);
+        await SharedpreferenceHelper().saveUserEmail(userEmail);
+
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LogIn ()),
+          MaterialPageRoute(builder: (context) => BottomNavBar()),
         );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
+      } else {
+        // Handle case where document does not exist
+        print("No document found for this UID in Firestore.");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "The password provided is too weak.",
-              style: TextStyle(fontSize: 18.0),
-            ),
-          ),
-        );
-      } else if (e.code == 'email-already-in-use') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "The account already exists for that email.",
-              style: TextStyle(fontSize: 18.0),
-            ),
+            backgroundColor: Colors.red,
+            content: Text("User data not found in Firestore."),
           ),
         );
       }
+    }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.orangeAccent,
+          content: Text(
+            "No user found for that email.",
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+      );
+    } else if (e.code == 'wrong-password') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.orangeAccent,
+          content: Text(
+            "Wrong password provided for that user.",
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+      );
     }
   }
 }
 
 
 
+     
 
 
 
-  @override
+
+
+
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       body: SingleChildScrollView(
         child: Stack(
           children: [
@@ -151,31 +148,12 @@ class _SignupState extends State<Signup> {
                 SizedBox(height: 10.0,),
                 Center(
                   child: Text(
-                  "Signup",
+                  "Login",
                   style: AppWidget.headlineTextFieldStyle(),
                 ),
                 ),
                 SizedBox(height: 10.0),
-                Text(
-                   "Name", 
-                    style: AppWidget.signupTextFieldStyle()
-                ),                
-                SizedBox(height: 5.0),
-                Container(
-                  decoration: BoxDecoration(
-                      color: Color(0xFFececf8),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: TextField(
-                    controller: namecontroller,
-                    decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Enter Name",
-                        prefixIcon: Icon(Icons.person_outline)
-                    ),
-                  ),
-                ),
-            
-                SizedBox(height: 10.0),
+                SizedBox(height: 20.0),
                 Text("Email", style: AppWidget.signupTextFieldStyle()),
                 SizedBox(height: 5.0),
                 Container(
@@ -208,34 +186,31 @@ class _SignupState extends State<Signup> {
                 ),
               
         SizedBox(
-          height: 20.0
+          height: 10.0
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              "Forgot Password?",
+              style: AppWidget.simpleTextFieldStyle(),
+            )
+          ],
+        ),
+        SizedBox(
+          height: 40.0
         ),
         GestureDetector(
           onTap: () {
-            if(namecontroller.text!="" && mailcontroller.text!="" && passwordcontroller.text!="") {
+            if(mailcontroller.text != "" && passwordcontroller.text != "") {
               setState(() {
-              name = namecontroller.text;
-              email = mailcontroller.text;
+                email = mailcontroller.text;
               password = passwordcontroller.text;
-              });
-              registration();
                 
-              
-              
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: Colors.red,
-                  content: Text(
-                    "Please fill all the fields",
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                )
-              );
-            }
+              });
+             
+              userLogin();
+            } 
           },
           child: Center(
             child: Container(
@@ -246,39 +221,39 @@ class _SignupState extends State<Signup> {
                   borderRadius: BorderRadius.circular(30)),
               child: Center(
                 child: Text(
-                  "Sign Up", 
+                  "Log In", 
                   style: AppWidget.boldTextFieldStyle()
                 )
               ),
             ),
           ),
         ),
-        SizedBox(height: 20.0),
+        SizedBox(height: 30.0),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Have an account?",
+              "No account?",
               style: AppWidget.simpleTextFieldStyle(),
             ),
             SizedBox(width: 10.0),
             GestureDetector(
               onTap: () {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => LogIn()));
+                    context, MaterialPageRoute(builder: (context) => Signup()));
               },
-              child: Text("Log In", style: AppWidget.boldTextFieldStyle()),
+              child: Text("Sign Up", style: AppWidget.boldTextFieldStyle()),
             ),
           ],
         ),
-            ],
+      ],
           ),
         ),
           ),
         )
             ],
           ),
-      )
+      ),
       );
   }
 }

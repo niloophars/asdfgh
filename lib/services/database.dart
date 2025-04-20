@@ -20,10 +20,50 @@ class DatabaseMethods {
 
 Future<QuerySnapshot> search(String name) async {
   return await FirebaseFirestore.instance.collection("Recipe")
-      .where("Key", arrayContains: name.substring(0, 1).toUpperCase())
+      .where("SearchKey", arrayContains: name.substring(0, 1).toUpperCase())
       .get();
 }
 
 
 
+  Future addUserDetails(Map<String, dynamic> userInfoMap, String id) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .set(userInfoMap);
+
+  }
+
+  Future<void> addFavorite(String userId, Map<String, dynamic> recipeData, String dishName) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("favorites")
+        .doc(dishName)
+        .set(recipeData);
+  }
+
+  Future<void> removeFavorite(String userId, String dishName) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("favorites")
+        .doc(dishName)
+        .delete();
+  }
+
+  Future<bool> isFavorite(String userId, String dishName) async {
+    var doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("favorites")
+        .doc(dishName)
+        .get();
+
+    return doc.exists;
+  }
+
+
+
 }
+

@@ -7,7 +7,11 @@ import 'package:recipe/firebase_options.dart';
 import 'package:recipe/pages/add_recipe.dart';
 import 'package:recipe/pages/bottomnavbar.dart';
 import 'package:recipe/pages/home.dart';
+import 'package:recipe/pages/login.dart';
+import 'package:recipe/pages/onboarding.dart';
+import 'package:recipe/pages/profile.dart';
 import 'package:recipe/pages/recipe.dart';
+import 'package:recipe/pages/signup.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +47,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Home(),
+      home: LogIn(),
     );
   }
 }

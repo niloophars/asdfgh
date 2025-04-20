@@ -1,4 +1,5 @@
 
+import 'package:recipe/pages/add_recipe.dart';
 import 'package:recipe/pages/profile.dart';
 
 import 'package:flutter/material.dart';
@@ -19,24 +20,30 @@ class _BottomNavBarState extends State<BottomNavBar> {
   late List<Widget> pages; 
 
   late Home homePage;
+  late AddRecipe add;
+  late Center walletPage;
+  late AddRecipe addRecipe;
 
-  late Profile profilePage;
+  late Profile profile;
 
   int currentTabIndex = 0;
-  
+
   @override
   void initState() {
     homePage = Home();
-
-    profilePage = Profile();
+    addRecipe = AddRecipe();
+    profile = Profile();
+    walletPage = Center(child: Text("Wallet Page Coming Soon"));
 
     pages = [
       homePage,
-   
-      profilePage,
+      walletPage,
+      addRecipe,
+      profile,
     ];
     super.initState();
   }
+
 
 
   @override
@@ -45,7 +52,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       bottomNavigationBar: CurvedNavigationBar(
         height: 70,
         backgroundColor: Colors.white,
-        color: Colors.black,
+        color: const Color.fromARGB(255, 148, 89, 0),
         animationDuration: Duration(milliseconds: 500),
         onTap: (int index) {
           setState(() {
@@ -64,7 +71,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             size: 30.0,
           ),
           Icon(
-            Icons.shopping_bag,
+            Icons.add_circle,
             color: Colors.white,
             size: 30.0,
           ),

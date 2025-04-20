@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+// import 'package:recipe/pages/shared_pref.dart';
 import 'package:recipe/services/widget_support.dart';
 
 class Recipe extends StatefulWidget {
@@ -11,12 +12,23 @@ class Recipe extends StatefulWidget {
 }
 
 class _RecipeState extends State<Recipe> {
+
   Map<String, dynamic>? recipeData;
+  String? name, id;
   bool isLoading = true;
+
+  // getthesharedpref() async {
+  //   name = await SharedpreferenceHelper().getUserName();
+  //   id = await SharedpreferenceHelper().getUserId();
+  //   setState(() {
+      
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
+    // getthesharedpref();
     getRecipeDetails();
   }
 

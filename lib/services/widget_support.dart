@@ -4,7 +4,7 @@ class AppWidget{
 
   static TextStyle headlineTextFieldStyle(){
     return TextStyle(
-      color: Colors.black,
+      color: const Color.fromARGB(255, 146, 88, 0),
       fontSize: 30.0,
       fontWeight: FontWeight.bold,
     );
@@ -46,6 +46,14 @@ class AppWidget{
       color: const Color.fromARGB(255, 103, 78, 4),
       fontSize: 15.0,
       fontWeight: FontWeight.w500
+    );
+  }
+
+  static TextStyle signupTextFieldStyle(){
+    return TextStyle(
+      color: const Color.fromARGB(255, 103, 78, 4),
+      fontSize: 18.0,
+      fontWeight: FontWeight.bold
     );
   }
 

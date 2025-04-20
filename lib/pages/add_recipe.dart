@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:recipe/services/database.dart';
+import 'package:recipe/pages/home.dart';
 
 class AddRecipe extends StatefulWidget {
   const AddRecipe({super.key});
@@ -87,7 +88,7 @@ class _AddRecipeState extends State<AddRecipe> {
       "TotalTime": totalTimeController.text,
       "Category": value,
       "SearchedName": searchedName,
-      "SearchKeys": searchKeys,
+      "SearchKey": searchKeys,
     };
 
       DatabaseMethods().addRecipe(addRecipe).then((value) {
@@ -107,7 +108,12 @@ class _AddRecipeState extends State<AddRecipe> {
       cookingInstructionsList.clear();
       totalTimeController.clear();
       imageUrlController.clear();
-      _pageController.jumpToPage(0); // Go back to the first page
+      
+      
+       Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+      );// Go back to the first page
     });
   } else {
     print("Please fill all fields.");
