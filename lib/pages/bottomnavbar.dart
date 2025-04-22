@@ -20,7 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   late List<Widget> pages; 
 
   late Home homePage;
-  late RecipeSearchAltUI search;
+  late Search search;
   late AddRecipe addRecipe;
   late Profile profile;
 
@@ -29,7 +29,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   void initState() {
     homePage = Home();
-    search = RecipeSearchAltUI();
+    search = Search();
     addRecipe = AddRecipe();
     profile = Profile();
   

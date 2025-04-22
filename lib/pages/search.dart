@@ -3,30 +3,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:recipe/pages/recipe.dart';
 import 'package:recipe/services/widget_support.dart';
 
-class RecipeSearchAltUI extends StatefulWidget {
+class Search extends StatefulWidget {
   @override
-  _RecipeSearchAltUIState createState() => _RecipeSearchAltUIState();
+  _Search createState() => _Search();
 }
 
-class _RecipeSearchAltUIState extends State<RecipeSearchAltUI> {
-
-List queryResultSet = [];
-List tempSearchStore = [];
-bool search = false;
-
-
-
-
-
+class _Search extends State<Search> {
+  List queryResultSet = [];
+  List tempSearchStore = [];
+  bool search = false;
 
   String _searchQuery = "";
-  String _searchMode = "Name"; // or "Ingredient"
+  String _searchMode = ""; // Initially empty
   List<QueryDocumentSnapshot> _results = [];
 
-   void initiateSearch(String value) {
-  if (value.isEmpty) {
+  void initiateSearch(String value) {
+  if (_searchMode.isEmpty || value.isEmpty) {
     setState(() {
-      queryResultSet = [];
       tempSearchStore = [];
       search = false;
     });
@@ -35,55 +28,32 @@ bool search = false;
 
   String searchKey = value.toLowerCase();
 
-  if (queryResultSet.isEmpty) {
-    FirebaseFirestore.instance
-        .collection('Recipe')
-        .get()
-        .then((QuerySnapshot docs) {
-      List tempList = [];
-      for (var doc in docs.docs) {
-        var recipeData = doc.data() as Map<String, dynamic>;
-        recipeData["id"] = doc.id;
-        tempList.add(recipeData);
-      }
+  FirebaseFirestore.instance.collection('Recipe').get().then((QuerySnapshot docs) {
+    List tempList = [];
 
-      setState(() {
-        queryResultSet = tempList;
+    for (var doc in docs.docs) {
+      var recipeData = doc.data() as Map<String, dynamic>;
+      recipeData["id"] = doc.id;
+      tempList.add(recipeData);
+    }
 
-        if (_searchMode == "Recipe Name") {
-          tempSearchStore = tempList.where((element) =>
-            element['SearchedName'].toString().startsWith(searchKey)).toList();
-        } else {
-          tempSearchStore = tempList.where((element) {
-            List ingredients = element['Ingredients'];
-            return ingredients.any((i) =>
-              i['name'].toString().toLowerCase().startsWith(searchKey));
-          }).toList();
-        }
-
-        search = true;
-      });
-    });
-  } else {
     setState(() {
       if (_searchMode == "Recipe Name") {
-        tempSearchStore = queryResultSet.where((element) =>
-            element['SearchedName'].toString().startsWith(searchKey)).toList();
+        tempSearchStore = tempList.where((element) {
+          List index = List<String>.from(element['searchIndex'] ?? []);
+          return index.contains(searchKey);
+        }).toList();
       } else {
-        tempSearchStore = queryResultSet.where((element) {
-          List ingredients = element['Ingredients'];
-          return ingredients.any((i) =>
-            i['name'].toString().toLowerCase().startsWith(searchKey));
+        tempSearchStore = tempList.where((element) {
+          List index = List<String>.from(element['searchIndexIngredients'] ?? []);
+          return index.contains(searchKey);
         }).toList();
       }
 
       search = true;
     });
-  }
+  });
 }
-
-
-
 
 
   Widget _buildToggleButton(String label) {
@@ -118,54 +88,53 @@ bool search = false;
   }
 
   Widget buildResultCard(Map<String, dynamic> data) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Recipe(
-            dish: data["Name"],
-            image: data["ImageURL"],
-            recipeId: data["id"],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Recipe(
+              dish: data["Name"],
+              image: data["ImageURL"],
+              recipeId: data["id"],
+            ),
           ),
-        ),
-      );
-    },
-    child: Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: Material(
-        elevation: 5.0,
-        borderRadius: BorderRadius.circular(10.0),
-        child: Container(
-          padding: EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 236, 201, 95),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(60),
-                child: Image.network(
-                  data["ImageURL"],
-                  height: 60.0,
-                  width: 60.0,
-                  fit: BoxFit.cover,
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8),
+        child: Material(
+          elevation: 5.0,
+          borderRadius: BorderRadius.circular(10.0),
+          child: Container(
+            padding: EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 236, 201, 95),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(60),
+                  child: Image.network(
+                    data["ImageURL"],
+                    height: 60.0,
+                    width: 60.0,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              SizedBox(width: 10.0),
-              Text(
-                data["Name"],
-                style: AppWidget.boldTextFieldStyle(),
-              )
-            ],
+                SizedBox(width: 10.0),
+                Text(
+                  data["Name"],
+                  style: AppWidget.boldTextFieldStyle(),
+                )
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildRecipeCard(DocumentSnapshot doc) {
     final name = doc['Name'];
@@ -188,7 +157,7 @@ bool search = false;
     );
   }
 
- @override
+@override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(title: Text('Search Recipes')),
@@ -215,21 +184,36 @@ Widget build(BuildContext context) {
               borderRadius: BorderRadius.circular(10.0),
             ),
             width: MediaQuery.of(context).size.width,
-            child: TextField(
-              onChanged: (value) {
-                _searchQuery = value;
-                initiateSearch(value);
-              },
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                
-                suffixIcon: Icon(
-                  Icons.search_outlined,
-                  color: Color.fromARGB(255, 137, 84, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search bar (always visible)
+                TextField(
+                  onChanged: (value) {
+                    if (_searchMode.isNotEmpty) {
+                      _searchQuery = value;
+                      initiateSearch(value);
+                    }
+                  },
+                  enabled: _searchMode.isNotEmpty, // Disable if no category is selected
+                  decoration: InputDecoration(
+                    hintText: _searchMode.isEmpty
+                        ? "Choose a filter"  // Show hint text when no mode is selected
+                        : "Search by $_searchMode", // Show the filter type when one is selected
+                    border: InputBorder.none,
+                    suffixIcon: Icon(
+                      Icons.search_outlined,
+                      color: Color.fromARGB(255, 137, 84, 4),
+                    ),
+                  ),
+                  style: TextStyle(
+                    color: _searchMode.isNotEmpty
+                        ? Color.fromARGB(255, 137, 84, 4)
+                        : Colors.grey, // Change color based on enabled state
+                  ),
+                  cursorColor: Color.fromARGB(255, 137, 84, 4),
                 ),
-              ),
-              style: TextStyle(color: Color.fromARGB(255, 137, 84, 4)),
-              cursorColor: Color.fromARGB(255, 137, 84, 4),
+              ],
             ),
           ),
 
@@ -237,36 +221,46 @@ Widget build(BuildContext context) {
 
           // Results
           Expanded(
-  child: !search
-      ? Center(
-          child: Text(
-            "Start searching for recipes!",
-            style: TextStyle(
-              fontSize: 18,
-              color: const Color.fromARGB(255, 133, 73, 0),
-              fontWeight: FontWeight.w500,
-            ),
+            child: _searchMode.isEmpty
+                ? Center(
+                    child: Text(
+                      "Start searching for recipes!",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: const Color.fromARGB(255, 133, 73, 0),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                : !search
+                    ? Center(
+                        child: Text(
+                          "Start searching for recipes!",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: const Color.fromARGB(255, 133, 73, 0),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                    : tempSearchStore.isEmpty
+                        ? Center(
+                            child: Text(
+                              "No recipes found",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: const Color.fromARGB(255, 133, 73, 0),
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: tempSearchStore.length,
+                            itemBuilder: (context, index) {
+                              final data = tempSearchStore[index];
+                              return buildResultCard(data);
+                            },
+                          ),
           ),
-        )
-      : tempSearchStore.isEmpty
-          ? Center(
-              child: Text(
-                "No recipes found",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[700],
-                ),
-              ),
-            )
-          : ListView.builder(
-              itemCount: tempSearchStore.length,
-              itemBuilder: (context, index) {
-                final data = tempSearchStore[index];
-                return buildResultCard(data);
-              },
-            ),
-          ),          
-
         ],
       ),
     ),
