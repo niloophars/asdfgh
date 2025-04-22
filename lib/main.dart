@@ -8,6 +8,7 @@ import 'package:recipe/pages/add_recipe.dart';
 import 'package:recipe/pages/bottomnavbar.dart';
 import 'package:recipe/pages/home.dart';
 import 'package:recipe/pages/login.dart';
+import 'package:recipe/pages/myrecipe.dart';
 import 'package:recipe/pages/onboarding.dart';
 import 'package:recipe/pages/profile.dart';
 import 'package:recipe/pages/recipe.dart';
@@ -47,6 +48,17 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
+     
+      routes: {
+        '/home': (context) => BottomNavBar(initialIndex: 0), // contains Home as tab
+        '/search': (context) => BottomNavBar(initialIndex: 1),
+        '/add': (context) => BottomNavBar(initialIndex: 2),
+        '/profile': (context) => BottomNavBar(initialIndex: 3),
+        '/myrecipes': (context) => MyRecipes(), // shown with nav bar manually
+      },
+   
+
+
       home: BottomNavBar(),
     );
   }

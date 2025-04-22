@@ -4,40 +4,39 @@ import 'package:flutter/material.dart';
 import 'package:recipe/pages/recipe.dart';
 import 'package:recipe/services/widget_support.dart';
 
-class FavoritesPage extends StatefulWidget {
+class MyRecipes extends StatefulWidget {
   @override
-  _FavoritesPageState createState() => _FavoritesPageState();
+  _MyRecipesState createState() => _MyRecipesState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
+class _MyRecipesState extends State<MyRecipes> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late String userId;
   bool isLoading = true;
-  List<Map<String, dynamic>> favoriteRecipes = [];
+  List<Map<String, dynamic>> myRecipes = [];
 
   @override
   void initState() {
     super.initState();
-    getUserFavorites();
+    getUserRecipes();
   }
 
-  // Fetch the current user's favorites from Firestore
-  void getUserFavorites() async {
+  // Fetch the current user's recipes from Firestore
+  void getUserRecipes() async {
     User? user = _auth.currentUser;
     if (user != null) {
       userId = user.uid;
 
-      // Fetch the favorite recipes from Firestore
+      // Fetch the recipes added by the user
       QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection("users")
-          .doc(userId)
-          .collection("favorites")
+          .collection("Recipe")
+          .where("userId", isEqualTo: userId)
           .get();
 
       setState(() {
-        favoriteRecipes = snapshot.docs.map((doc) {
+        myRecipes = snapshot.docs.map((doc) {
           var data = doc.data() as Map<String, dynamic>;
-          data['id'] = data['recipeId'] ?? doc.id; // Ensure we always have recipeId
+          data['id'] = doc.id; // Add recipe ID
           return data;
         }).toList();
         isLoading = false;
@@ -45,20 +44,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
     }
   }
 
-  void removeFavorite(String recipeId) async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(user.uid)
-          .collection("favorites")
-          .doc(recipeId)
-          .delete();
+  // Delete a recipe added by the user
+  void deleteRecipe(String recipeId) async {
+    await FirebaseFirestore.instance.collection("Recipe").doc(recipeId).delete();
 
-      setState(() {
-        favoriteRecipes.removeWhere((recipe) => recipe["id"] == recipeId);
-      });
-    }
+    setState(() {
+      myRecipes.removeWhere((recipe) => recipe["id"] == recipeId);
+    });
   }
 
   @override
@@ -75,10 +67,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Positioned(
-                    top: 30,
-                    left: 10,
-                    child: GestureDetector(
+                  GestureDetector(
                       onTap: () {
                         Navigator.pop(context); // Pop the current screen and go back
                       },
@@ -92,29 +81,30 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "My Favorite Recipes",
-                    style: TextStyle(
-                      fontSize: 25.0,
-                      fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 171, 102, 0),
+                  
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        "My Recipes",
+                        style: TextStyle(
+                          fontSize: 25.0,
+                          fontWeight: FontWeight.bold,
+                          color: const Color.fromARGB(255, 171, 102, 0),
+                        ),
+                      ),
                     ),
                   ),
+                  SizedBox(width: 40), // Space for the back button
                 ],
               ),
             ),
-        
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : favoriteRecipes.isEmpty
+                  : myRecipes.isEmpty
                       ? Center(
                           child: Text(
-                            "No favorites added yet!",
+                            "No recipes added yet!",
                             style: TextStyle(
                               fontSize: 18,
                               color: const Color.fromARGB(255, 133, 73, 0),
@@ -123,9 +113,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           ),
                         )
                       : ListView.builder(
-                          itemCount: favoriteRecipes.length,
+                          itemCount: myRecipes.length,
                           itemBuilder: (context, index) {
-                            var recipe = favoriteRecipes[index];
+                            var recipe = myRecipes[index];
                             var recipeId = recipe['id'];
         
                             return Card(
@@ -148,7 +138,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                 ),
                                 title: Text(
                                   recipe["Name"] ?? "No name",
-                                  style: AppWidget.boldTextFieldStyle()
+                                  style: AppWidget.boldTextFieldStyle(),
                                 ),
                                 subtitle: Text(
                                   recipe["Category"] ?? "",
@@ -156,7 +146,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                 ),
                                 trailing: IconButton(
                                   icon: Icon(Icons.delete, color: const Color.fromARGB(255, 150, 90, 0)),
-                                  onPressed: () => removeFavorite(recipeId),
+                                  onPressed: () => deleteRecipe(recipeId),
                                 ),
                                 onTap: () {
                                   Navigator.push(
@@ -165,7 +155,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                       builder: (context) => Recipe(
                                         image: recipe["ImageURL"] ?? '',
                                         dish: recipe["Name"] ?? '',
-                                        recipeId: recipeId, // ✅ correct Firestore doc ID
+                                        recipeId: recipeId,
                                       ),
                                     ),
                                   );
@@ -178,7 +168,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: AppWidget.buildGlobalNavBar(context),
+       bottomNavigationBar: AppWidget.buildGlobalNavBar(context),
     );
   }
 }

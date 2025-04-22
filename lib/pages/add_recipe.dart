@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:recipe/services/auth.dart';
 import 'package:recipe/services/database.dart';
 import 'package:recipe/pages/home.dart';
 
@@ -70,15 +71,13 @@ class _AddRecipeState extends State<AddRecipe> {
       cookingInstructionsList.isNotEmpty &&
       totalTimeController.text.isNotEmpty) {
 
-    // Get full name
+    final user = await AuthMethods().getCurrentUser();
+    final userId = user?.uid ?? '';
+
+
     String fullName = nameController.text.trim();
-
-    // Convert to uppercase for exact match
     String searchedName = fullName.toUpperCase();
-
-    // Get first letters of each word (lowercase)
     List<String> searchKeys = generateSearchKeys(fullName);
-
 
     Map<String, dynamic> addRecipe = {
       "Name": fullName,
@@ -89,9 +88,10 @@ class _AddRecipeState extends State<AddRecipe> {
       "Category": value,
       "SearchedName": searchedName,
       "SearchKey": searchKeys,
+      "userId": userId,  // 👈 Add this line
     };
 
-      DatabaseMethods().addRecipe(addRecipe).then((value) {
+    DatabaseMethods().addRecipe(addRecipe).then((value) {
       Fluttertoast.showToast(
         msg: "Recipe Added Successfully",
         toastLength: Toast.LENGTH_LONG,
@@ -102,23 +102,22 @@ class _AddRecipeState extends State<AddRecipe> {
         fontSize: 16.0,
       );
 
-      // Reset fields
       nameController.clear();
       ingredientsList.clear();
       cookingInstructionsList.clear();
       totalTimeController.clear();
       imageUrlController.clear();
-      
-      
-       Navigator.pushReplacement(
+
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
-      );// Go back to the first page
+      );
     });
   } else {
     print("Please fill all fields.");
   }
 }
+
 
   @override
   Widget build(BuildContext context) {

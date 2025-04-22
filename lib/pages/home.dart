@@ -52,7 +52,7 @@ class _HomeState extends State<Home> {
 
   if (queryResultSet.isEmpty && value.length == 1) {
     // Perform search on Firestore when the query is fresh
-    DatabaseMethods().search(searchKey).then((QuerySnapshot docs) {
+    DatabaseMethods().searchByRecipeName(searchKey).then((QuerySnapshot docs) {
       print("Docs found: ${docs.docs.length}");
       List tempList = [];
       for (var doc in docs.docs) {

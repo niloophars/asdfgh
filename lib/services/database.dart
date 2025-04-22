@@ -18,13 +18,20 @@ class DatabaseMethods {
     where("Category", isEqualTo: category).snapshots();
   }
 
- Future<QuerySnapshot> search(String searchKey) async {
+ Future<QuerySnapshot> searchByRecipeName(String searchKey) async {
   return FirebaseFirestore.instance
-    .collection('Recipe')
-    .where('searchIndex', arrayContains: searchKey)
-    .get();
-
+      .collection('Recipe')
+      .where('searchIndex', arrayContains: searchKey)
+      .get();
 }
+
+Future<QuerySnapshot> searchByIngredient(String searchKey) async {
+  return FirebaseFirestore.instance
+      .collection('Recipe')
+      .where('searchIndexIngredients', arrayContains: searchKey)
+      .get();
+}
+
 
 
 
@@ -109,8 +116,38 @@ class DatabaseMethods {
           "rating_count": newCount,
         });
   }
+
+
+  // Fetch a recipe by its ID
+  Future<Map<String, dynamic>?> getRecipeById(String recipeId) async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('Recipe')
+        .doc(recipeId)
+        .get();
+
+    if (snapshot.exists) {
+      return snapshot.data() as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  // Update the recipe in the database
+  Future<void> updateRecipe(String recipeId, Map<String, dynamic> updatedRecipe) async {
+    await FirebaseFirestore.instance
+        .collection('Recipe')
+        .doc(recipeId)
+        .update(updatedRecipe);
+  
 }
 
 
+  // Method to fetch recipes added by the current user
+  Future<Stream<QuerySnapshot>> getUserRecipes(String userId) async {
+    return FirebaseFirestore.instance
+        .collection("Recipe")
+        .where("userId", isEqualTo: userId) // Assuming you store userId in each recipe document
+        .snapshots();
+  }
+}
 
 

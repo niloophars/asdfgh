@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:recipe/pages/recipe.dart';
+import 'package:recipe/services/database.dart';
 import 'package:recipe/services/widget_support.dart';
 
 class Search extends StatefulWidget {
@@ -17,8 +18,14 @@ class _Search extends State<Search> {
   String _searchMode = ""; // Initially empty
   List<QueryDocumentSnapshot> _results = [];
 
-  void initiateSearch(String value) {
-  if (_searchMode.isEmpty || value.isEmpty) {
+  
+  
+
+
+      void initiateSearch(String value) {
+  String searchKey = value.toLowerCase();
+
+  if (_searchMode.isEmpty || searchKey.isEmpty) {
     setState(() {
       tempSearchStore = [];
       search = false;
@@ -26,34 +33,46 @@ class _Search extends State<Search> {
     return;
   }
 
-  String searchKey = value.toLowerCase();
+  Future<QuerySnapshot> future = _searchMode == "Recipe Name"
+      ? DatabaseMethods().searchByRecipeName(searchKey)
+      : DatabaseMethods().searchByIngredient(searchKey);
 
-  FirebaseFirestore.instance.collection('Recipe').get().then((QuerySnapshot docs) {
-    List tempList = [];
+  future.then((snapshot) {
+    List<Map<String, dynamic>> results = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      data["id"] = doc.id;
 
-    for (var doc in docs.docs) {
-      var recipeData = doc.data() as Map<String, dynamic>;
-      recipeData["id"] = doc.id;
-      tempList.add(recipeData);
-    }
+      // 🔍 Only if searching by Ingredient
+      if (_searchMode == "Ingredient") {
+        final ingredients = List<Map<String, dynamic>>.from(data["Ingredients"] ?? []);
+        final matchedIngredients = <String>[];
 
-    setState(() {
-      if (_searchMode == "Recipe Name") {
-        tempSearchStore = tempList.where((element) {
-          List index = List<String>.from(element['searchIndex'] ?? []);
-          return index.contains(searchKey);
-        }).toList();
-      } else {
-        tempSearchStore = tempList.where((element) {
-          List index = List<String>.from(element['searchIndexIngredients'] ?? []);
-          return index.contains(searchKey);
-        }).toList();
+        // Check if the searchKey matches the beginning of the ingredient name (case insensitive)
+        for (var ingredient in ingredients) {
+          String ingredientName = ingredient['name'].toString().toLowerCase();
+
+          // Add the full ingredient name if the searchKey matches the start of the ingredient name
+          if (ingredientName.startsWith(searchKey)) {
+            matchedIngredients.add(ingredient['name']);  // Add full ingredient name here
+          }
+        }
+
+        // Only include recipes where we found matching ingredients
+        data["matchedIngredients"] = matchedIngredients;
       }
 
+      return data;
+    }).toList();
+
+    setState(() {
+      tempSearchStore = results;
       search = true;
     });
   });
 }
+
+
+
 
 
   Widget _buildToggleButton(String label) {
@@ -88,86 +107,131 @@ class _Search extends State<Search> {
   }
 
   Widget buildResultCard(Map<String, dynamic> data) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Recipe(
-              dish: data["Name"],
-              image: data["ImageURL"],
-              recipeId: data["id"],
-            ),
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Recipe(
+            dish: data["Name"],
+            image: data["ImageURL"],
+            recipeId: data["id"],
           ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 8),
-        child: Material(
-          elevation: 5.0,
-          borderRadius: BorderRadius.circular(10.0),
-          child: Container(
-            padding: EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 236, 201, 95),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(60),
-                  child: Image.network(
-                    data["ImageURL"],
-                    height: 60.0,
-                    width: 60.0,
-                    fit: BoxFit.cover,
+        ),
+      );
+    },
+    child: Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Material(
+        elevation: 5.0,
+        borderRadius: BorderRadius.circular(10.0),
+        child: Container(
+          padding: EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 236, 201, 95),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(60),
+                    child: Image.network(
+                      data["ImageURL"],
+                      height: 60.0,
+                      width: 60.0,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  Expanded(
+                    child: Text(
+                      data["Name"],
+                      style: AppWidget.boldTextFieldStyle(),
+                    ),
+                  )
+                ],
+              ),
+              if (_searchMode == "Ingredient" && data["matchedIngredients"] != null && data["matchedIngredients"].isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Wrap(
+                    spacing: 6,
+                    children: (data["matchedIngredients"] as List<String>)
+                        .map((ingredient) => Chip(
+                              label: Text(ingredient),
+                              backgroundColor: const Color.fromARGB(255, 197, 151, 15),
+                              labelStyle: TextStyle(color: Colors.brown[800]),
+                            ))
+                        .toList(),
                   ),
                 ),
-                SizedBox(width: 10.0),
-                Text(
-                  data["Name"],
-                  style: AppWidget.boldTextFieldStyle(),
-                )
-              ],
-            ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildRecipeCard(DocumentSnapshot doc) {
-    final name = doc['Name'];
-    final ingredients = List<Map<String, dynamic>>.from(doc['Ingredients']);
 
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(16),
-        title: Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: ingredients
-              .map((i) => Text("- ${i['name']} (${i['quantity']})", style: TextStyle(fontSize: 14)))
-              .toList(),
-        ),
-      ),
-    );
-  }
 
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(title: Text('Search Recipes')),
+    // Remove the AppBar and add the custom Container as the header
     body: Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
+          // Custom Container for the header (replacing AppBar)
+          Container(
+            margin: EdgeInsets.only(top: 40.0, bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Back Button
+                Positioned(
+                  top: 30,
+                  left: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context); // Go back to the previous screen
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: const Color.fromARGB(255, 212, 183, 96),
+                      radius: 20,
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: const Color.fromARGB(255, 112, 79, 1),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                // Title
+                Text(
+                  "My Favorite Recipes",
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 171, 102, 0),
+                  ),
+                ),
+              ],
+            ),
+            
+          ),
+          SizedBox(height: 20),
           // Toggle Buttons
           Row(
             children: [
+            
               _buildToggleButton("Recipe Name"),
               SizedBox(width: 8),
               _buildToggleButton("Ingredient"),
@@ -266,5 +330,9 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
+  
+
+  
 
 }

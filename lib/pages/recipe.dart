@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // Add for star rating
+import 'package:recipe/pages/edit_recipe.dart';
 import 'package:recipe/services/database.dart';
 
 class Recipe extends StatefulWidget {
@@ -155,196 +156,239 @@ Future<void> getUserRating() async {
 
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                Image.network(
-                  widget.image,
-                  width: MediaQuery.of(context).size.width,
-                  height: 400,
-                  fit: BoxFit.cover,
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Stack(
+            children: [
+              Image.network(
+                widget.image,
+                width: MediaQuery.of(context).size.width,
+                height: 400,
+                fit: BoxFit.cover,
+              ),
+              Container(
+                padding: EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  top: 40.0,
                 ),
-                Container(
-                  padding: EdgeInsets.only(
-                    left: 20.0,
-                    right: 20.0,
-                    top: 40.0,
+                margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width / 1.1,
+                ),
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 247, 213, 112),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
                   ),
-                  margin: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.width / 1.1,
-                  ),
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 247, 213, 112),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Recipe heading with dish name
-                        Text(
-                          widget.dish,
-                          style: TextStyle(
-                            fontSize: 30.0,
-                            fontWeight: FontWeight.bold,
+                ),
+                child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Recipe heading with dish name and edit icon
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            widget.dish,
+                            style: TextStyle(
+                              fontSize: 30.0,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 88, 63, 4)
+                            ),
                           ),
-                        ),
-                        Divider(),
-                        SizedBox(height: 10.0),
-                        // Timer and Rating in the same row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.timer, color: const Color.fromARGB(255, 112, 79, 1)),
-                                SizedBox(width: 6),
-                                Text(
-                                  recipeData!["TotalTime"] ?? "",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                
-                                 Icon(
-                                  Icons.star_border,
-                                  color: const Color.fromARGB(255, 112, 79, 1),
-                                  size: 40,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  averageRating != null
-                                      ? averageRating!.toStringAsFixed(1)
-                                      : "0.0",
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                               
-                              ],
-                            ),
+                          if (recipeData!["userId"] == userId) // Show pencil icon if the user is the creator
                             GestureDetector(
-                              onTap: toggleFavorite,
+                              onTap: () async {
+                                // Navigate to the edit page when the pencil icon is tapped
+                               await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditRecipePage(
+                                      recipeId: widget.recipeId,
+                                      recipeData: recipeData!,
+                                    ),
+                                  ),
+                                );
+                                setState(() {
+                                    isLoading = true;
+                                  });
+                                  await getRecipeDetails();
+                                },
+
+                              
                               child: Icon(
-                                isFavorite ? Icons.bookmark : Icons.bookmark_border,
-                                size: 50.0,
-                                color: const Color.fromARGB(255, 112, 79, 1),
+                                Icons.edit,
+                                color: const Color.fromARGB(255, 112, 79, 1), // You can change the color
+                                size: 30.0,
                               ),
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 20.0),
-                        Text(
-                          "Ingredients",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        SizedBox(height: 10.0),
-                        ...List.generate(
-                          (recipeData!["Ingredients"] as List).length,
-                          (index) {
-                            final ingredient = recipeData!["Ingredients"][index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4.0),
-                              child: Text(
-                                "• ${ingredient["name"]} - ${ingredient["quantity"]}",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            );
-                          },
-                        ),
-                        SizedBox(height: 20.0),
-                        Text(
-                          "Instructions",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        SizedBox(height: 10.0),
-                        ...List.generate(
-                          (recipeData!["CookingInstructions"] as List).length,
-                          (index) {
-                            final step = recipeData!["CookingInstructions"][index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: Text(
-                                "${index + 1}. $step",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            );
-                          },
-                        ),
-                        SizedBox(height: 30),
-                        // Rating Input Section
-                        Text(
-                          "Rate this recipe",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        SizedBox(height: 10),
-                        RatingBar.builder(
-                          initialRating: userRating ?? 0.0,
-                          minRating: 1,
-                          itemCount: 5,
-                          itemSize: 40.0,
-                          direction: Axis.horizontal,
-                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                          itemBuilder: (context, index) {
-                            // Check if the current star index is less than the user's rating
-                            if (index < (userRating ?? 0.0)) {
-                              // Return a filled star for rated stars
-                              return Icon(
-                                Icons.star,
-                                color: const Color.fromARGB(255, 157, 126, 1), // Golden color for rated stars
-                              );
-                            } else {
-                              // Return an outlined star for unrated stars
-                              return Icon(
-                                Icons.star_border,
-                                color: const Color.fromARGB(255, 168, 118, 1), // Light gold color for unrated stars
-                              );
-                            }
-                          },
-                          onRatingUpdate: (rating) {
-                            updateRating(rating);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Small round back button positioned at top left
-                Positioned(
-                  top: 30,
-                  left: 10,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // Pop the current screen and go back
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: const Color.fromARGB(255, 212, 183, 96),
-                      radius: 20,
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: const Color.fromARGB(255, 112, 79, 1),
-                        size: 20,
+                        ],
                       ),
+                      Divider(),
+                      SizedBox(height: 10.0),
+                      // Timer and Rating in the same row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.timer, color: const Color.fromARGB(255, 112, 79, 1)),
+                              SizedBox(width: 6),
+                              Text(
+                                recipeData!["TotalTime"] ?? "",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star_border,
+                                color: const Color.fromARGB(255, 112, 79, 1),
+                                size: 40,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                averageRating != null
+                                    ? averageRating!.toStringAsFixed(1)
+                                    : "0.0",
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: toggleFavorite,
+                            child: Icon(
+                              isFavorite ? Icons.bookmark : Icons.bookmark_border,
+                              size: 50.0,
+                              color: const Color.fromARGB(255, 112, 79, 1),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20.0),
+                      Text(
+                        "Ingredients",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 20,
+                          color: const Color.fromARGB(255, 86, 60, 0)
+                          ),
+                      ),
+                      SizedBox(height: 10.0),
+                      ...List.generate(
+                        (recipeData!["Ingredients"] as List).length,
+                        (index) {
+                          final ingredient = recipeData!["Ingredients"][index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Text(
+                              "• ${ingredient["name"]} - ${ingredient["quantity"]}",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 20.0),
+                      Text(
+                        "Instructions",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 20,
+                          color: const Color.fromARGB(255, 86, 60, 0)
+                          ),
+                      ),
+                      SizedBox(height: 10.0),
+                      ...List.generate(
+                        (recipeData!["CookingInstructions"] as List).length,
+                        (index) {
+                          final step = recipeData!["CookingInstructions"][index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Text(
+                              "${index + 1}. $step",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 30),
+                      // Rating Input Section
+                      Text(
+                        "Rate this recipe",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 20,
+                          color:  Color.fromARGB(255, 86, 60, 0)
+                          ),
+                      ),
+                      SizedBox(height: 10),
+                      RatingBar.builder(
+                        initialRating: userRating ?? 0.0,
+                        minRating: 1,
+                        itemCount: 5,
+                        itemSize: 40.0,
+                        direction: Axis.horizontal,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                        itemBuilder: (context, index) {
+                          // Check if the current star index is less than the user's rating
+                          if (index < (userRating ?? 0.0)) {
+                            // Return a filled star for rated stars
+                            return Icon(
+                              Icons.star,
+                              color: const Color.fromARGB(255, 157, 126, 1), // Golden color for rated stars
+                            );
+                          } else {
+                            // Return an outlined star for unrated stars
+                            return Icon(
+                              Icons.star_border,
+                              color: const Color.fromARGB(255, 168, 118, 1), // Light gold color for unrated stars
+                            );
+                          }
+                        },
+                        onRatingUpdate: (rating) {
+                          updateRating(rating);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Small round back button positioned at top left
+              Positioned(
+                top: 30,
+                left: 10,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context); // Pop the current screen and go back
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: const Color.fromARGB(255, 212, 183, 96),
+                    radius: 20,
+                    child: Icon(
+                      Icons.arrow_back,
+                      color: const Color.fromARGB(255, 112, 79, 1),
+                      size: 20,
                     ),
                   ),
                 ),
-              ],
-            ),
-    );
-  }
+              ),
+            ],
+          ),
+  );
+}
+
 }
