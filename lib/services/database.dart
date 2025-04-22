@@ -38,35 +38,79 @@ class DatabaseMethods {
 
   }
 
-  Future<void> addFavorite(String userId, Map<String, dynamic> recipeData, String dishName) async {
-    return await FirebaseFirestore.instance
-        .collection("users")
-        .doc(userId)
-        .collection("favorites")
-        .doc(dishName)
-        .set(recipeData);
-  }
+  Future<void> addFavorite(String userId, Map<String, dynamic> recipeData, String recipeId) async {
+  return await FirebaseFirestore.instance
+      .collection("users")
+      .doc(userId)
+      .collection("favorites")
+      .doc(recipeId) // use real Recipe doc ID as doc name
+      .set({
+        ...recipeData,
+        "recipeId": recipeId, // ensure it's stored
+      });
+}
 
-  Future<void> removeFavorite(String userId, String dishName) async {
+
+  Future<void> removeFavorite(String userId, String recipeId) async {
     return await FirebaseFirestore.instance
         .collection("users")
         .doc(userId)
         .collection("favorites")
-        .doc(dishName)
+        .doc(recipeId)
         .delete();
   }
 
-  Future<bool> isFavorite(String userId, String dishName) async {
+  Future<bool> isFavorite(String userId, String recipeId) async {
     var doc = await FirebaseFirestore.instance
         .collection("users")
         .doc(userId)
         .collection("favorites")
-        .doc(dishName)
+        .doc(recipeId)
         .get();
 
     return doc.exists;
   }
+
+   // Save user rating to the subcollection
+  Future<void> addUserRating(String recipeId, String userId, double rating) async {
+    return await FirebaseFirestore.instance
+        .collection("Recipe")
+        .doc(recipeId)
+        .collection("Ratings")
+        .doc(userId)
+        .set({
+          "rating": rating,
+        });
+  }
+
+  // Check if user has already rated
+  Future<double?> getUserRating(String recipeId, String userId) async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection("Recipe")
+        .doc(recipeId)
+        .collection("Ratings")
+        .doc(userId)
+        .get();
+
+    if (snapshot.exists) {
+      return (snapshot.data() as Map<String, dynamic>)["rating"]?.toDouble();
+    } else {
+      return null;
+    }
+  }
+
+  // Update average rating and count in recipe document
+  Future<void> updateRecipeAverageRating(String recipeId, double newAvg, int newCount) async {
+    return await FirebaseFirestore.instance
+        .collection("Recipe")
+        .doc(recipeId)
+        .update({
+          "rating": newAvg,
+          "rating_count": newCount,
+        });
+  }
 }
+
 
 
 

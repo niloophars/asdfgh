@@ -56,8 +56,11 @@ class _HomeState extends State<Home> {
       print("Docs found: ${docs.docs.length}");
       List tempList = [];
       for (var doc in docs.docs) {
-        tempList.add(doc.data());
-      }
+        var recipeData = doc.data() as Map<String, dynamic>;
+        recipeData["id"] = doc.id; // Attach the ID manually
+        tempList.add(recipeData);
+}
+
 
       setState(() {
         queryResultSet = tempList;

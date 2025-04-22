@@ -1,11 +1,10 @@
 
-import 'package:recipe/pages/add_recipe.dart';
-import 'package:recipe/pages/favorite.dart';
+import 'package:recipe/pages/add_recipe.dart';  
 import 'package:recipe/pages/profile.dart';
-
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:recipe/pages/home.dart';
+import 'package:recipe/pages/search.dart';
 
 
 
@@ -21,7 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   late List<Widget> pages; 
 
   late Home homePage;
-  late FavoritesPage favorite;
+  late RecipeSearchAltUI search;
   late AddRecipe addRecipe;
   late Profile profile;
 
@@ -30,14 +29,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   void initState() {
     homePage = Home();
-    favorite = FavoritesPage();
+    search = RecipeSearchAltUI();
     addRecipe = AddRecipe();
     profile = Profile();
   
 
     pages = [
       homePage,
-      favorite,
+      search,
       addRecipe,
       profile,
     ];
@@ -66,7 +65,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             size: 30.0,
           ),
           Icon(
-            Icons.bookmark,
+            Icons.search,
             color: Colors.white,
             size: 30.0,
           ),

@@ -21,43 +21,41 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   // Fetch the current user's favorites from Firestore
-void getUserFavorites() async {
-  User? user = _auth.currentUser;
-  if (user != null) {
-    userId = user.uid;
+  void getUserFavorites() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      userId = user.uid;
 
-    // Fetch the favorite recipes from Firestore
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(userId)
-        .collection("favorites")
-        .get();
+      // Fetch the favorite recipes from Firestore
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(userId)
+          .collection("favorites")
+          .get();
 
-    setState(() {
-      // Use document's id property instead of adding it as a field in the data
-      favoriteRecipes = snapshot.docs.map((doc) {
-        var data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;  // Add the document ID to the data map
-        return data;
-      }).toList();
-      isLoading = false;
-    });
+      setState(() {
+        favoriteRecipes = snapshot.docs.map((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          data['id'] = data['recipeId'] ?? doc.id; // Ensure we always have recipeId
+          return data;
+        }).toList();
+        isLoading = false;
+      });
+    }
   }
-}
 
-
-  void removeFavorite(String dishName) async {
+  void removeFavorite(String recipeId) async {
     User? user = _auth.currentUser;
     if (user != null) {
       await FirebaseFirestore.instance
           .collection("users")
           .doc(user.uid)
           .collection("favorites")
-          .doc(dishName)
+          .doc(recipeId)
           .delete();
 
       setState(() {
-        favoriteRecipes.removeWhere((recipe) => recipe["Name"] == dishName);
+        favoriteRecipes.removeWhere((recipe) => recipe["id"] == recipeId);
       });
     }
   }
@@ -101,62 +99,60 @@ void getUserFavorites() async {
                         ),
                       )
                     : ListView.builder(
-  itemCount: favoriteRecipes.length,
-  itemBuilder: (context, index) {
-    var recipe = favoriteRecipes[index];
-    var recipeId = recipe['id'];  // Now the id is available
+                        itemCount: favoriteRecipes.length,
+                        itemBuilder: (context, index) {
+                          var recipe = favoriteRecipes[index];
+                          var recipeId = recipe['id'];
 
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(10),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            recipe["ImageURL"] ?? '',
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-          ),
-        ),
-        title: Text(
-          recipe["Name"] ?? "No name",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: const Color.fromARGB(255, 156, 118, 5),
-          ),
-        ),
-        subtitle: Text(
-          recipe["Category"] ?? "",
-          style: TextStyle(color: const Color(0xDD885F08)),
-        ),
-        trailing: IconButton(
-          icon: Icon(Icons.delete, color: const Color.fromARGB(255, 150, 90, 0)),
-          onPressed: () => removeFavorite(recipe["Name"]),
-        ),
-        onTap: () {
-          // Pass the recipeId along with other data
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Recipe(
-                image: recipe["ImageURL"] ?? '',
-                dish: recipe["Name"] ?? '',
-                recipeId: recipe['id'],  // Pass the recipeId here
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  },
-)
-
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 4,
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.all(10),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  recipe["ImageURL"] ?? '',
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              title: Text(
+                                recipe["Name"] ?? "No name",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: const Color.fromARGB(255, 156, 118, 5),
+                                ),
+                              ),
+                              subtitle: Text(
+                                recipe["Category"] ?? "",
+                                style: TextStyle(color: const Color(0xDD885F08)),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: const Color.fromARGB(255, 150, 90, 0)),
+                                onPressed: () => removeFavorite(recipeId),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Recipe(
+                                      image: recipe["ImageURL"] ?? '',
+                                      dish: recipe["Name"] ?? '',
+                                      recipeId: recipeId, // ✅ correct Firestore doc ID
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),

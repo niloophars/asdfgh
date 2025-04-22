@@ -22,12 +22,19 @@ class _RecipeState extends State<Recipe> {
 
   DatabaseMethods databaseMethods = DatabaseMethods();
 
-  @override
-  void initState() {
-    super.initState();
-    getRecipeDetails();
-    _getCurrentUserId(); // Get user ID to check favorite status
-  }
+ @override
+void initState() {
+  super.initState();
+  initializeRecipeScreen();
+}
+
+void initializeRecipeScreen() async {
+  await _getCurrentUserId();        // sets userId
+  await getRecipeDetails();         // fetch recipe info
+  await getUserRating();            // gets this user's rating
+}
+
+
 
   // Fetch recipe details from Firestore
   getRecipeDetails() async {
@@ -47,14 +54,30 @@ class _RecipeState extends State<Recipe> {
 
   // Get the current user's ID from FirebaseAuth
   Future<void> _getCurrentUserId() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-        userId = user.uid;
-      });
-      _checkFavoriteStatus(userId); // Check if the recipe is a favorite
-    }
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    userId = user.uid;              // no need for setState here
+    _checkFavoriteStatus(userId);  // check if it's a favorite
   }
+}
+
+// Fetch this user's rating for the current recipe
+Future<void> getUserRating() async {
+  var ratingDoc = await FirebaseFirestore.instance
+      .collection("users")
+      .doc(userId)
+      .collection("ratings")
+      .doc(widget.recipeId)
+      .get();
+
+  if (ratingDoc.exists) {
+    setState(() {
+      userRating = ratingDoc['rating'];
+    });
+  }
+}
+
+
 
   // Check if the recipe is a favorite for the current user
   void _checkFavoriteStatus(String userId) async {
@@ -82,26 +105,55 @@ class _RecipeState extends State<Recipe> {
 
   // Update rating in Firestore
   void updateRating(double rating) async {
-    if (recipeData != null) {
-      double totalRating = recipeData!["rating"] ?? 0.0;
-      int ratingCount = recipeData!["rating_count"] ?? 0;
+  if (recipeData != null) {
+    final recipeRef = FirebaseFirestore.instance.collection("Recipe").doc(widget.recipeId);
+    final userRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("ratings")
+        .doc(widget.recipeId);
 
-      // Calculate new average rating
-      double newTotalRating = totalRating + rating;
-      int newRatingCount = ratingCount + 1;
-      double newAverageRating = newTotalRating / newRatingCount;
+    // Check if user already rated
+    var existingRatingDoc = await userRef.get();
+    double existingRating = existingRatingDoc.exists ? existingRatingDoc['rating'] : 0.0;
 
-      await FirebaseFirestore.instance.collection("Recipe").doc(widget.recipeId).update({
-        "rating": newAverageRating,
-        "rating_count": newRatingCount,
-      });
+    double totalRating = recipeData!["rating"] ?? 0.0;
+    int ratingCount = recipeData!["rating_count"] ?? 0;
 
-      setState(() {
-        averageRating = newAverageRating;
-        userRating = rating;
-      });
+    double newTotalRating;
+    int newRatingCount;
+
+    if (existingRatingDoc.exists) {
+      // If already rated, adjust total
+      newTotalRating = totalRating - existingRating + rating;
+      newRatingCount = ratingCount;
+    } else {
+      newTotalRating = totalRating + rating;
+      newRatingCount = ratingCount + 1;
     }
+
+    double newAverageRating = newTotalRating / newRatingCount;
+
+    // Update recipe average
+    await recipeRef.update({
+      "rating": newAverageRating,
+      "rating_count": newRatingCount,
+    });
+
+    // Store user-specific rating
+    await userRef.set({
+      "rating": rating,
+      "timestamp": FieldValue.serverTimestamp(),
+    });
+
+    setState(() {
+      averageRating = newAverageRating;
+      userRating = rating;
+    });
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
