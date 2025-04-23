@@ -14,6 +14,8 @@ class Recipe extends StatefulWidget {
 }
 
 class _RecipeState extends State<Recipe> {
+  String? creatorName;
+
   Map<String, dynamic>? recipeData;
   bool isLoading = true;
   bool isFavorite = false; // Track favorite status
@@ -38,20 +40,45 @@ void initializeRecipeScreen() async {
 
 
   // Fetch recipe details from Firestore
-  getRecipeDetails() async {
+ getRecipeDetails() async {
+  try {
     QuerySnapshot snap = await FirebaseFirestore.instance
         .collection("Recipe")
         .where("Name", isEqualTo: widget.dish)
         .get();
 
     if (snap.docs.isNotEmpty) {
+      var doc = snap.docs.first;
+      var data = doc.data() as Map<String, dynamic>;
+      var creatorId = data["userId"];
+
+      // Fetch the creator's name
+      DocumentSnapshot userSnap = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(creatorId)
+          .get();
+
       setState(() {
-        recipeData = snap.docs.first.data() as Map<String, dynamic>;
-        averageRating = recipeData!["rating"] ?? 0.0; // Get current average rating
+        recipeData = data;
+        averageRating = data["rating"] ?? 0.0;
+        creatorName = userSnap.exists ? userSnap["Name"] : "Unknown";
+        isLoading = false;
+      });
+    } else {
+      print("Recipe not found");
+      setState(() {
         isLoading = false;
       });
     }
+  } catch (e) {
+    print("Error in getRecipeDetails: $e");
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
+
 
   // Get the current user's ID from FirebaseAuth
   Future<void> _getCurrentUserId() async {
@@ -191,46 +218,74 @@ Widget build(BuildContext context) {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      
+
                       // Recipe heading with dish name and edit icon
+                        
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.dish,
-                            style: TextStyle(
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold,
-                              color: const Color.fromARGB(255, 88, 63, 4)
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    // Dish title and creator name
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.dish,
+            style: TextStyle(
+              fontSize: 30.0,
+              fontWeight: FontWeight.bold,
+              color: const Color.fromARGB(255, 88, 63, 4),
+            ),
+            softWrap: true,
+          ),
+          if (creatorName != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                "Added by $creatorName",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: const Color.fromARGB(255, 88, 63, 4),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+
+    // Edit icon if user is the creator
+                if (recipeData!["userId"] == userId)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditRecipePage(
+                              recipeId: widget.recipeId,
+                              recipeData: recipeData!,
                             ),
                           ),
-                          if (recipeData!["userId"] == userId) // Show pencil icon if the user is the creator
-                            GestureDetector(
-                              onTap: () async {
-                                // Navigate to the edit page when the pencil icon is tapped
-                               await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditRecipePage(
-                                      recipeId: widget.recipeId,
-                                      recipeData: recipeData!,
-                                    ),
-                                  ),
-                                );
-                                setState(() {
-                                    isLoading = true;
-                                  });
-                                  await getRecipeDetails();
-                                },
-
-                              
-                              child: Icon(
-                                Icons.edit,
-                                color: const Color.fromARGB(255, 112, 79, 1), // You can change the color
-                                size: 30.0,
-                              ),
-                            ),
-                        ],
+                        );
+                        setState(() {
+                          isLoading = true;
+                        });
+                        await getRecipeDetails();
+                      },
+                      child: Icon(
+                        Icons.edit,
+                        color: const Color.fromARGB(255, 112, 79, 1),
+                        size: 30.0,
                       ),
+                    ),
+                  ),
+              ],
+            ),
+
+
                       Divider(),
                       SizedBox(height: 10.0),
                       // Timer and Rating in the same row

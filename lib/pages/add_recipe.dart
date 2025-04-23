@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:recipe/pages/bottomnavbar.dart';
 import 'package:recipe/services/auth.dart';
 import 'package:recipe/services/database.dart';
 import 'package:recipe/pages/home.dart';
@@ -64,20 +65,49 @@ class _AddRecipeState extends State<AddRecipe> {
     });
   }
 
-  uploadItem() async {
+    uploadItem() async {
+  final user = await AuthMethods().getCurrentUser();
+  final userId = user?.uid ?? '';
+  print('Uploading with userId: $userId');
+
+
+
+  if (user == null) {
+    Fluttertoast.showToast(
+      msg: "Please login to add a recipe.",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+
+    // Optional: Navigate to login page
+    Navigator.pushNamed(context, '/login');
+    return;
+  }
+
+  // If user is logged in, proceed
+  
+
   if (imageUrlController.text.isNotEmpty &&
       nameController.text.isNotEmpty &&
       ingredientsList.isNotEmpty &&
       cookingInstructionsList.isNotEmpty &&
       totalTimeController.text.isNotEmpty) {
-
-    final user = await AuthMethods().getCurrentUser();
-    final userId = user?.uid ?? '';
-
-
+    
+    // Prepare search data
     String fullName = nameController.text.trim();
     String searchedName = fullName.toUpperCase();
     List<String> searchKeys = generateSearchKeys(fullName);
+
+    Set<String> searchIndexIngredients = {};
+    for (var ingredient in ingredientsList) {
+      String name = (ingredient['name'] ?? '').toLowerCase();
+      for (int i = 1; i <= name.length; i++) {
+        searchIndexIngredients.add(name.substring(0, i));
+      }
+    }
 
     Map<String, dynamic> addRecipe = {
       "Name": fullName,
@@ -87,8 +117,9 @@ class _AddRecipeState extends State<AddRecipe> {
       "TotalTime": totalTimeController.text,
       "Category": value,
       "SearchedName": searchedName,
-      "SearchKey": searchKeys,
-      "userId": userId,  // 👈 Add this line
+      "searchIndex": searchKeys,
+      "searchIndexIngredients": searchIndexIngredients.toList(),
+      "userId": userId,
     };
 
     DatabaseMethods().addRecipe(addRecipe).then((value) {
@@ -96,12 +127,12 @@ class _AddRecipeState extends State<AddRecipe> {
         msg: "Recipe Added Successfully",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
         backgroundColor: const Color.fromARGB(255, 175, 152, 76),
         textColor: Colors.white,
         fontSize: 16.0,
       );
 
+      // Clear form
       nameController.clear();
       ingredientsList.clear();
       cookingInstructionsList.clear();
@@ -110,13 +141,18 @@ class _AddRecipeState extends State<AddRecipe> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Home()),
+        MaterialPageRoute(builder: (context) => const BottomNavBar(initialIndex: 0)),
       );
     });
   } else {
-    print("Please fill all fields.");
+    Fluttertoast.showToast(
+      msg: "Please fill all fields.",
+      backgroundColor: const Color.fromARGB(255, 202, 121, 0),
+      textColor: Colors.white,
+    );
   }
 }
+
 
 
   @override
